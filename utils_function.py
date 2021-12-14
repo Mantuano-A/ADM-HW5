@@ -169,7 +169,7 @@ def convertDate(time):
             Parameters:
                     time (string) 
             Returns:
-                    time (int): return converted time as this formato YYYYMM, so year and month
+                    time (int): return converted time as this format YYYYMM, so year and month
     """
     tmp = time.split("/")
     return int(tmp[1] + tmp[0])
