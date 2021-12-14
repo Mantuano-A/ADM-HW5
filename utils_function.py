@@ -11,11 +11,11 @@ warnings.filterwarnings("ignore")
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 
-###################################
-#								  #
+###################################################
+#						  #
 #		  Functions Ex1			  #
-#								  #
-###################################
+#						  #
+###################################################
 
 def get_user(user, dict_users):
     """
@@ -66,11 +66,11 @@ def create_graph(df, type_node, weight, graph):
         graph[source_].add_out_relation(rel) #  # add to v the oucoming edge to v   
     return graph
 
-###################################
-#								  #
-#		  Functions Ex2 		  #
-#								  #
-###################################
+###################################################
+#						  #
+#		  Functions Ex2			  #
+#						  #
+###################################################
 
 # Ex 2.1
 def get_features(name_graph):
