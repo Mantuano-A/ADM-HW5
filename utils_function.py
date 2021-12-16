@@ -150,12 +150,29 @@ def degreeCentrality(graph, source, start, end):
 
 # Ex 2.3
 def getMinUnvisited(unvisited, dist):
+    """
+    Find the minimum distance vertex from
+    the set of vertices not yet processed.
+            
+            Parameters:
+                    unvisited (set): the set containing all the vertex not yet processed
+                    dist (dict): a dictionary with vertex as key and the total distance from the source as value                    
+    """    
+    # set initial values
     result, dist_min = -1 , float('inf')
-    
+    #filtering the key with unvisited
     aux = {key: dist[key] for key in unvisited}
     return min(aux, key=aux.get)
 	
 def getMinUnvisited(unvisited, dist):
+    """
+    return the minimum distance vertex from
+    the set of vertices not yet processed.
+            
+            Parameters:
+                    unvisited (set): the set containing all the vertex not yet processed
+                    dist (dict): a dictionary with vertex as key and the total distance from the source as value
+    """         
     aux = {key: dist[key] for key in unvisited}
     minimum = min(aux.values())
     for key in unvisited:
@@ -175,8 +192,22 @@ def convertDate(time):
     return int(tmp[1] + tmp[0])
 	
 def getShortestPath(source, target, prev, dist):
+    """
+    Rebuild the shortest path from source to target as a list and its cost
+    
+            Parameters:
+                    source (int): the vertex choose as source
+                    target (int): the vertex choose as target
+                    prev (dict): a dictionary with vertex as key and last previous vertex in the path from the source as value 
+                                -1 if it is not reachable
+                    dist (dict): a dictionary with vertex as key and the total distance from the source as value
+            Returns:
+                    path (list): the sequence of nodes covered
+                    cost (int): cost of the path
+    """
     path = [target]
     cost = dist[target]
+    # go back from target to source using prev dictionary
     while target != source:
         path.append(prev[target])
         target = prev[target]
@@ -184,35 +215,79 @@ def getShortestPath(source, target, prev, dist):
     return path, cost
 
 def getNeighbors(node, graph, start, end):
+    """
+    Find all the vertex reachable from the current node and the respective cost of the paths updated
+    
+            Parameters:
+                    node (int): the current node
+                    graph: the graph we are working on 
+                    start (string): beginning date in format "MM/YYYY"
+                    end (string): ending date in format "MM/YYYY"
+           Returns:
+                    neighbors (dict): a dictionary with vertexs nearby node as key and the total distance from the source as value
+    """
     neighbors = dict()
     x = graph[node].get_out_relation
+    # examinating all the edges getting out from node
     for date in x.keys():
         if start <= date <= end:
             for rel in x[date].keys():
                 for edge in x[date][rel]:
                     target = edge.target
                     weight = edge.weight
+                    # updating the weight to get from the source to this specific vertex (target)
                     neighbors[target] = neighbors.get(target, weight) + weight
     return neighbors
 
 def myDijkstra(graph, source, start, end):
+    """
+    Implements Dijkstra's single source shortest path algorithm
+    for a directed graph 
+    
+            Parameters:
+                    graph: the graph we are working on 
+                    source (int): the vertex choose as source
+                    start (string): beginning date in format "MM/YYYY"
+                    end (string): ending date in format "MM/YYYY"
+            Returns:
+                    prev (dict): a dictionary with vertex as key and last previous vertex in the path from the source as value 
+                                -1 if it is not reachable
+                    dist (dict): a dictionary with vertex as key and the total distance from the source as value    
+    """
+    # date from string to int
     start = convertDate(start)
     end = convertDate(end)
+    
     visited = set()
     unvisited = set(graph.keys())
     dist = dict()
     prev = dict()
+    
+    # set all the initial values:
+    #         - infinity to distances
+    #         - -1 to previous node    
     for u in unvisited:
         dist[u] = float('inf')
         prev[u] = -1  
-    dist[source] = 0    
+    dist[source] = 0  
+    
+    # mark source as visited
     visited.add(source)
-    while len(unvisited) > 0 or not set(neighbor.keys()).issubset(visited):     
+    
+    # iterate until:
+    #         - there is something to visit 
+    #      or
+    #         - all the neighbors of the current node are not marked as visited
+    while len(unvisited) > 0 or not set(neighbor.keys()).issubset(visited):
+        # choose the correct node 
         current_node = getMinUnvisited(unvisited, dist)
         unvisited.remove(current_node)
         visited.add(current_node)
+        
         neighbor = getNeighbors(current_node,graph, start, end)
+        
         for u in unvisited.intersection(set(neighbor.keys())):
+            # updating the cost if necessary
             new_dist = dist[current_node] + neighbor[u]
             if new_dist < dist[u]:
                 dist[u] = new_dist
@@ -220,14 +295,34 @@ def myDijkstra(graph, source, start, end):
 
     return prev, dist
 
-def shortestOrderedRoute(graph, start, end, seq_users, p_1, p_n):
+def shortestOrderedRoute(graph, start, end, seq_users, p_1, p_n): 
+    """
+    Find the shortest ordered route starting from p_1, passing by seq_users
+    and ending in p_n
+    
+            Parameters:
+                    graph: the graph we are working on 
+                    start (string): beginning date in format "MM/YYYY"
+                    end (string): ending date in format "MM/YYYY"
+                    seq_users (list): list with all intermediate nodes
+                    p_1 (int): starting node
+                    p_n (int): ending node
+            Returns: 
+                    path (list): list containing all the node of the the shortest ordered route
+                    weight (int): hom much cost the ordered route
+
+    """
     nodes = [p_1] + seq_users + [p_n]
+    # starting the path and its weight
     path = [p_1]
     weight = 0
     
     for i in range(len(nodes)-1):
+        # compute the shortest path from nodes[i] to all reachable nodes
         prev, dist = myDijkstra(graph, nodes[i], start, end)
+        # find a list of the shortest path from nodes[i] to nodes[i+1] and its weigth
         seq, w = getShortestPath(nodes[i], nodes[i+1], prev, dist)
+        # if nodes[i+1] is reachable from nodes[i] update the path and the total weigth
         if w < float('inf'):
             path.extend(seq[1:])
             weight += w
