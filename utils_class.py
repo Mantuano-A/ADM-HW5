@@ -15,7 +15,8 @@ class Relation:
         self.source_ = source.get_ID
         self.target_ = target.get_ID
         self.weight_ = weight
-
+        self.weight_in_ = 0
+        
     @property
     def get_type(self):
         return self.type_relation_
@@ -32,12 +33,19 @@ class Relation:
     def source(self):
         return self.source_
     
+    def set_weight_in(self, weight):
+        self.weight_in_ = weight
+    
     def set_weight(self, weight):
         self.weight_ = weight
     
     @property
     def weight(self):
         return self.weight_
+    
+    @property
+    def weight_in(self):
+        return self.weight_in_
     
     def __str__(self): 
         return "{\"type_relation\": \"" + self.type_relation_ + "\", \"time\": " + str(self.time_) + ", \"source\": " + str(self.source_) + ", \"target\": " + \
