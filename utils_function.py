@@ -101,6 +101,9 @@ def get_features(name_graph):
     average_link_user = round(number_rel / len(users), 1)
     density_degree = round(number_rel / (len(users) * (len(users) - 1)), 4)
     type_graph = "DENSE" if density_degree >= 0.5 else "SPARSE"
+
+    #################################################################################
+    #visualization
     row = [["Directed", "True"], [ "Number of users", str(len(users))], ["Number of answers/comments", str(number_rel) ], ["Average number of links per user",str(average_link_user) ],\
            ["Density degree of the graph", str(density_degree)], ["Type of graph", type_graph]]
     rowEvenColor = 'grey'
@@ -123,53 +126,84 @@ def get_features(name_graph):
 
 #Ex 2.2
 def dijkstraNumShortesPath(graph, source, start, end):
+    """
+    Implements Dijkstra's single source shortest path algorithm
+    for a directed graph 
+    
+            Parameters:
+                    graph: the graph we are working on 
+                    source (int): the vertex choose as source
+                    start (string): beginning date in format "MM/YYYY"
+                    end (string): ending date in format "MM/YYYY"
+            Returns:
+                    prev (dict): a dictionary with vertex as key and as value the list of the previous nodes in the path
+                                -1 if it is not reachable
+                    dist (dict): a dictionary with vertex as key and the total distance from the source as value
+                    path (dict): as key the  node and as value the number of the shortest paths   
+    """
     start = convertDate(start)
     end = convertDate(end)
-    visited = set()
-    unvisited = set(graph)
-    dist = dict()
-    prev = dict()
-    path = dict()
+    visited = set() # set of visited node
+    unvisited = set(graph) # set of univised node
+    dist = dict() # as key the node and as a value the distance between all node
+    prev = dict() # as key the node and as a value list of the previous node with min distance
+    path = dict() # as key the node and as value the number of the shortest paths
+    #initialization
     for u in unvisited:
         dist[u] = float('inf')
         prev[u] = -1
     
     dist[source] = 0    
     visited.add(source)
+    # while there node to visited and visited not contain neighbor
     while len(unvisited) > 0 or not set(neighbor).issubset(visited):     
-        current_node = getMinUnvisited(unvisited, dist)
-        unvisited.remove(current_node)
+        current_node = getMinUnvisited(unvisited, dist) # get the node with the minimum cost of weight
+        unvisited.remove(current_node) 
         visited.add(current_node)
         neighbor = getNeighbors(current_node, graph, start, end)
+        # visited neighbors not visited yet 
         for u in unvisited.intersection(set(neighbor)):
             new_dist = dist[current_node] + neighbor[u]
             if new_dist < dist[u]:
                 dist[u] = new_dist
                 prev[u] = [current_node]
                 path[u] = 1
+            # if find distance that equals of the shortest, so we take into account all the shortest path
             elif dist[u] == new_dist and dist[u] != float("inf"):
-                    path[u] = path.get(u) + 1    # sigma
-                    prev[u].append(current_node)    #P
-    return prev, dist, path
+                    path[u] = path.get(u) + 1    # number of the shorted path for the node u
+                    prev[u].append(current_node)   
+    return prev, dist, path 
 
 def freq_(matrix):
+    """
+    Function that return the numbers of frequency for each element in the matrix
+    
+            Parameters:
+                    matrix
+            Returns:
+                    result(dictionary): as the key the element and as value the numbers of frequency for each element
+    """
     result = dict()
     for array in matrix:
         for el in array:
             result[el] = result.get(el,0) + 1
     return result
 
-def getShortestPath(source, target, prev, dist):
-    path = [target]
-    cost = dist[target]
-    while target != source:
-        path.append(prev[target])
-        target = prev[target]
-    path.reverse()
-    return path, cost
-
 
 def allShortPath(prev, current, source, path, all_path):
+    """
+    Function that return all path from the target(current) to the source 
+    
+            Parameters:
+                    prev (dict): a dictionary with vertex as key and as value the list of the previous nodes in the path
+                    current(int): the started node
+                    source(int): the desiderable node to find the shortest path
+                    path(list): empty list
+                    all_path(list): empty list
+                    
+            Returns:
+                    result(dictionary): as the key the element and as value the numbers of frequency for each element
+    """
     for node in prev[current]:
         if node == source:
             all_path.append(path + [node])
@@ -180,21 +214,7 @@ def allShortPath(prev, current, source, path, all_path):
 ###########################################################################################################################################
 
 # Ex 2.3
-def getMinUnvisited(unvisited, dist):
-    """
-    Find the minimum distance vertex from
-    the set of vertices not yet processed.
-            
-            Parameters:
-                    unvisited (set): the set containing all the vertex not yet processed
-                    dist (dict): a dictionary with vertex as key and the total distance from the source as value                    
-    """    
-    # set initial values
-    result, dist_min = -1 , float('inf')
-    #filtering the key with unvisited
-    aux = {key: dist[key] for key in unvisited}
-    return min(aux, key=aux.get)
-	
+
 def getMinUnvisited(unvisited, dist):
     """
     return the minimum distance vertex from
@@ -366,13 +386,25 @@ def shortestOrderedRoute(graph, start, end, seq_users, p_1, p_n):
 
 #function 2.4
 def graph_by_interval(graph, start, end):
+    """
+    Return a graph with the desiderable interval
+    
+            Parameters:
+                    graph: the graph we are working on 
+                    start (string): beginning date in format "MM/YYYY"
+                    end (string): ending date in format "MM/YYYY"
+            Returns: 
+                    result (class): sub graph with the desiderable interval
+                    
+
+    """
     start, end = convertDate(start), convertDate(end)
 
-    result = copy.deepcopy(graph)
+    result = copy.deepcopy(graph) # deep copy
     users = list(graph)
-
+    
     for user in users:
-        out_ = result[user].get_out_relation
+        out_ = result[user].get_out_relation 
         years = set(out_)
         for year in years:
             if not (start <= year <= end):
@@ -388,6 +420,15 @@ def graph_by_interval(graph, start, end):
     return result
 
 def merge(graph1, graph2):
+    """
+    Return the merge with graph1 and graph2
+    
+            Parameters:
+                    graph1(dictionary): as key node and as value the class of User in the graph  
+                    graph2(dictionary): as key node and as value the class of User in the graph  
+            Returns: 
+                    result (dictionary): the merge between graph1 and graph2
+    """
     result = copy.deepcopy(graph1)
     for user in graph2:
         if user not in result:
@@ -407,7 +448,20 @@ def merge(graph1, graph2):
 def createResidualG(graph):
     return copy.deepcopy(graph)
 
-def getNeighborsMinWeight(node, graph, start, end): # permettere alla BFS di percorrere al contrario
+def getNeighborsMinWeight(node, graph, start, end):
+    """
+    Return a graph with the desiderable interval
+    
+            Parameters:
+                    node: the node that we would to find all neighbor
+                    graph: the graph we are working on 
+                    start (string): beginning date in format "MM/YYYY"
+                    end (string): ending date in format "MM/YYYY"
+            Returns: 
+                    result (dict): contains as key all neighbors and as value for each key the weight 
+                    (if exists 2 or more edges between source and neighbor we take the edge with the minimum cost)"
+                    
+    """
     neighbors = dict()
     x = graph[node].get_out_relation
     for date in x.keys():
@@ -416,6 +470,7 @@ def getNeighborsMinWeight(node, graph, start, end): # permettere alla BFS di per
                 for edge in x[date][rel]:
                     neighbors[edge.target] = min(neighbors.get(edge.target, float('inf')), edge.weight)
     x = graph[node].get_in_relation
+    # we take into account also the the edges in relation
     for date in x.keys():
         if start <= date <= end:
             for rel in x[date].keys():
@@ -424,6 +479,18 @@ def getNeighborsMinWeight(node, graph, start, end): # permettere alla BFS di per
     return neighbors
 
 def getBottleneck(path, source, target):
+    """
+    Return the bottleneck, so the edges with the minimum cost in the path
+    
+            Parameters:
+                    graph: the graph we are working on 
+                    start (string): beginning date in format "MM/YYYY"
+                    end (string): ending date in format "MM/YYYY"
+            Returns: 
+                    bottleneck (int): minimum cost in the path
+                    
+
+    """
     current_value = target
     bottleneck = float("inf")
     while current_value != source:
@@ -432,6 +499,21 @@ def getBottleneck(path, source, target):
     return bottleneck
 
 def BFS(graph, s, t, path, start=200808, end=201603):
+    """
+    return two values, the first one if exists a path between s and t, and the second one is the path among s and t 
+    
+            Parameters:
+                    graph: the graph we are working on 
+                    path(dictionary): as key all node of the graph and as value -1
+                    flow(int): value used to update the residual in the path
+                    s(int): source -> starting point
+                    t(int): target -> end point
+            
+            Returns:
+                    boolean: if exists a path between s and t
+                    path(dictionary): as key the node and as value the parent node if exists, otherwise -1
+
+    """
     visited = set()
     queue = [s]
     visited.add(s)
@@ -443,11 +525,21 @@ def BFS(graph, s, t, path, start=200808, end=201603):
             if target not in visited and neighbors[target] > 0:
                 queue.append(target)
                 visited.add(target)
-                path[target] = (source, neighbors[target]) # non è detto che abbiamo un grafo con utenti da 0 a n quindi meglio che sia dizionario
+                path[target] = (source, neighbors[target])
     if t in visited:  return True, path       
     return False, path
 
 def updateResGraph(graph, path, flow, s, t):
+    """
+    Update the residual in the path given in input
+    
+            Parameters:
+                    graph: the graph we are working on 
+                    path(dictionary): as key the node and as value the parent node
+                    flow(int): value used to update the residual in the path
+                    s(int): source -> starting point
+                    t(int): target -> end point
+    """
     walk = [t]
     current_value = t
     while current_value != s:
@@ -467,6 +559,18 @@ def updateResGraph(graph, path, flow, s, t):
                         out_[year][rel][ind].set_weight_in(w_in)
                         
 def reachFromS(graph, source, start, end):
+    """
+    Return all node that reach from s
+    
+            Parameters:
+                    graph: the graph we are working on
+                    source: the starting node that we would to find all node reach from source
+                    start (string): beginning date in format "MM/YYYY"
+                    end (string): ending date in format "MM/YYYY"
+            Returns: 
+                    result (class): sub graph with the desiderable interval
+                    
+    """
     path = dict()
     path = BFS(graph, source, 0, path, start, end)[1]
     return path.keys()
@@ -475,6 +579,20 @@ def reachFromS(graph, source, start, end):
 #views ex 2.4
 
 def getEdges(G, path):
+    """
+    Return a graph with the desiderable interval
+    
+            Parameters:
+                    G: the graph we are working on 
+                    path(dictionary): as key the node and as value the parent node
+            Returns: 
+                    e1(list): all edges that weight is equal to 1
+                    e2(list): all edges that weight is equal to 2
+                    e3(list): all edges that weight is equal to 3
+                    edge_path1: all edges of the shortes path that weight is equal to 1
+                    edge_path2: all edges of the shortes path that weight is equal to 2
+                    edge_path3: all edges of the shortes path that weight is equal to 3                 
+    """
     e1 = []
     e2 = []
     e3 = []   
@@ -510,7 +628,8 @@ def graph_to_networkx(graph, type_graph):
     
             Parameters:
                     graph (dict): as a key we have the user ID and as a value we have the class associate of the User 
-                    type_graph(string): the type of graph that we want to obtain (c2a, c2q, a2q), NOTE: if type_graph is all, this mean we must to add all type of node
+                    type_graph(string): the type of graph that we want to obtain (c2a, c2q, a2q), 
+                        NOTE: if type_graph is all, this mean we must to add all type of node
     
             Returns:
                     G(networkx): the graph
@@ -531,6 +650,16 @@ def graph_to_networkx(graph, type_graph):
 
 
 def graph_by_user(graph, source, target):
+    """
+    Return a graph with the desiderable interval
+    
+            Parameters:
+                    graph: the graph we are working on 
+                    source(int): source -> starting point
+                    target(int): target -> end point
+            Returns: 
+                    result (dict): sub graph with the desiderable node
+    """
     result = copy.deepcopy(graph)
     users = list(graph)
     s = set(reachFromS(graph, source))
