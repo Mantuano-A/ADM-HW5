@@ -74,7 +74,7 @@ def create_graph(df, type_node, weight, graph):
 ###################################################
 
 # Ex 2.1
-def get_features(name_graph):
+def get_features(name_graph, graph):
     """
     plot all information below
     	- Whether the graph is directed or not
@@ -211,6 +211,33 @@ def allShortPath(prev, current, source, path, all_path):
             return all_path
         allShortPath(prev, node, source, path + [node], all_path)
     return all_path
+
+def getDegree(relation, start, end, target_bool=True):
+    """
+    Update the residual in the path given in input
+    
+            Parameters:
+                    relation(dict): as key the year and as a value a dict that have as a value the type of relation 
+                        and as a key the list of all relation
+                    start (int): timestamp
+                    end (int): timestamp
+                    target_bool(boolean): if True out_relation otherwise in_relation                
+            Returns:
+                    out(int): the degree of the node taken in input
+                    node(set): the neighbor of the source
+    """
+    out = 0
+    nodes = set()
+    for year in relation:
+        for rel in relation[year]:
+            for edge in relation[year][rel]:
+                if(start <= edge.time <= end):
+                    out += edge.weight
+                    if target_bool:
+                        nodes.add(edge.target)
+                    else:
+                        nodes.add(edge.source)
+    return out, nodes
 ###########################################################################################################################################
 
 # Ex 2.3
@@ -649,7 +676,7 @@ def graph_to_networkx(graph, type_graph):
     return G
 
 
-def graph_by_user(graph, source, target):
+def graph_by_user(graph, source, target, start, end):
     """
     Return a graph with the desiderable interval
     
@@ -662,7 +689,7 @@ def graph_by_user(graph, source, target):
     """
     result = copy.deepcopy(graph)
     users = list(graph)
-    s = set(reachFromS(graph, source))
+    s = set(reachFromS(graph, source, start, end))
     for user in users:
         if user not in s:
             result.pop(user)
