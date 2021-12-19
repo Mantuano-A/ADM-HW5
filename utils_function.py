@@ -466,9 +466,9 @@ def updateResGraph(graph, path, flow, s, t):
                         w_in = out_[year][rel][ind].weight_in + flow
                         out_[year][rel][ind].set_weight_in(w_in)
                         
-def reachFromS(graph, source):
+def reachFromS(graph, source, start, end):
     path = dict()
-    path = BFS(graph, source, 0, path)[1]
+    path = BFS(graph, source, 0, path, start, end)[1]
     return path.keys()
 
 #################################################################################################################
