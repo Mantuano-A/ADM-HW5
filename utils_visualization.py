@@ -121,7 +121,7 @@ def visualization4(graph, source, target, k, seed,cut):
     nodes = G.nodes
     e1, e2, e3, _, _, _ = getEdges(G, [])
     
-    nx.draw_networkx_nodes(G, pos, node_size = math.ceil(800*40/len(nodes)), nodelist = set(nodes) - set(source,target), alpha = 1, node_color = "white", label = "neighbour nods", edgecolors = "black")
+    nx.draw_networkx_nodes(G, pos, node_size = math.ceil(800*40/len(nodes)), nodelist = set(nodes) - set([source,target]), alpha = 1, node_color = "white", label = "neighbour nods", edgecolors = "black")
         
     nx.draw_networkx_nodes(G, pos, node_size = math.ceil(1300*50/len(nodes)), nodelist = [source,target],alpha = 0.8, node_color = "gold", label = "start node",edgecolors = "darkorange")    
     
